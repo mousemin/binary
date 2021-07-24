@@ -1,0 +1,26 @@
+#!/bin/bash
+# 获取当前文件夹
+pwd=$(cd $(dirname $0); pwd)
+# 首先判定openconnect是否安装
+if [ $# -lt 2 ];
+then
+	echo "Usage: openvpn connect|disconnect [optional] vpn-server"
+	exit 2
+fi
+
+operator=$1
+shift
+
+if [[ "$operator" = "connect" ]];
+then
+    vpn_server=$(eval echo \$$#)
+	exec sudo openconnect -b --pid-file=/var/run/openconnect.$vpn_server.pid --csd-wrapper $pwd/csd-post.sh $* 1>/dev/null
+elif [[ "$operator" = "disconnect" ]]
+then
+	pid=$(cat /var/run/openconnect.$1.pid)
+	echo "$1 disconnect..."
+	sudo kill $pid
+else
+	echo "Usage: openvpn connect|disconnect [optional] vpn-server"
+	exit 2
+fi
